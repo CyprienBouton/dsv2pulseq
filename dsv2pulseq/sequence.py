@@ -222,7 +222,7 @@ class Sequence():
                                     split_pt = int((pulseq_time-self.rf_lead_time-self.rf_hold_time) / self.delta['grad'])
                                 if pp_dur > pulseq_time:
                                     if hasattr(pp_event, 'waveform') or hasattr(pp_event, 'amplitude'):
-                                        g_wf = waveform_from_seqblock(pp_event)
+                                        g_wf = waveform_from_seqblock(pp_event, system)
                                         g_new = pp.make_arbitrary_grad(channel=pp_event.channel, waveform=g_wf[:split_pt], delay=pp_event.delay, system=system)
                                         pp_events_tmp.append(pp.make_arbitrary_grad(channel=pp_event.channel, waveform=g_wf[split_pt:], delay=0, system=system))
                                         pp_events[i] = g_new
@@ -246,7 +246,7 @@ class Sequence():
                                     elif event.type[0] == 'g':
                                         g_conc = self.__make_pp_grad(event, event_del, system)
                                         if g_conc is not None:
-                                            g_wf = [waveform_from_seqblock(pp_event), waveform_from_seqblock(g_conc)]
+                                            g_wf = [waveform_from_seqblock(pp_event, system), waveform_from_seqblock(g_conc, system)]
                                             len_wf = max([len(wf) for wf in g_wf])
                                             g_wf = [np.concatenate([wf, np.zeros(len_wf-len(wf))]) for wf in g_wf]
                                             g_wf = g_wf[0] + g_wf[1]
@@ -332,13 +332,13 @@ class Sequence():
         Make a Pulseq gradient event
         """
 
-        if grad_event.ramp_dn != 0:
+        if grad_event.ramp_dn != 0 and grad_event.amp != 0:
             # trapezoid
             g_flat = round_up_to_raster((grad_event.duration - grad_event.ramp_up) * self.cf_time, 5)
             g_ramp_up = round_up_to_raster(grad_event.ramp_up*self.cf_time, 5)
             g_ramp_dn = round_up_to_raster(grad_event.ramp_dn*self.cf_time, 5)
             g_del = round_up_to_raster(event_del*self.cf_time, 5)
-            return pp.make_trapezoid(channel=grad_event.channel, amplitude=grad_event.amp*self.cf_grad, flat_time=g_flat, rise_time=g_ramp_up, fall_time=g_ramp_dn, delay=g_del, system=system)
+            return pp.make_trapezoid(channel=grad_event.channel, amplitude=grad_event.amp*self.cf_grad, flat_time=g_flat, rise_time=g_ramp_up, delay=g_del, system=system)
         elif grad_event.duration == 0 and grad_event.ramp_up == 0:
             # zero duration gradient
             return None
