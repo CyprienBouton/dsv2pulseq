@@ -226,7 +226,7 @@ class Sequence():
                                         g_new = pp.make_arbitrary_grad(channel=pp_event.channel, waveform=g_wf[:split_pt], delay=pp_event.delay, system=system)
                                         pp_events_tmp.append(pp.make_arbitrary_grad(channel=pp_event.channel, waveform=g_wf[split_pt:], delay=0, system=system))
                                         pp_events[i] = g_new
-                                        event_check['g'+pp_event.channel] = 1
+                                        event_check['g'+pp_event.channel] = len(pp_events_tmp)
                                     else:
                                         raise ValueError(f"ADC, RF or trigger event in block with index {block.block_idx} can not be splitted. This version only supports splitting of gradients")
                             pp_seq.add_block(*pp_events)
@@ -332,13 +332,15 @@ class Sequence():
         Make a Pulseq gradient event
         """
 
-        if grad_event.ramp_dn != 0 and grad_event.amp != 0:
+        if grad_event.ramp_dn != 0:
             # trapezoid
             g_flat = round_up_to_raster((grad_event.duration - grad_event.ramp_up) * self.cf_time, 5)
             g_ramp_up = round_up_to_raster(grad_event.ramp_up*self.cf_time, 5)
-            g_ramp_dn = round_up_to_raster(grad_event.ramp_dn*self.cf_time, 5)
             g_del = round_up_to_raster(event_del*self.cf_time, 5)
-            return pp.make_trapezoid(channel=grad_event.channel, amplitude=grad_event.amp*self.cf_grad, flat_time=g_flat, rise_time=g_ramp_up, delay=g_del, system=system)
+            if grad_event.amp==0:
+                return pp.make_trapezoid(channel=grad_event.channel, flat_area=0, flat_time=g_flat, rise_time=g_ramp_up, delay=g_del, system=system)
+            else:
+                return pp.make_trapezoid(channel=grad_event.channel, amplitude=grad_event.amp*self.cf_grad, flat_time=g_flat, rise_time=g_ramp_up, delay=g_del, system=system)
         elif grad_event.duration == 0 and grad_event.ramp_up == 0:
             # zero duration gradient
             return None
