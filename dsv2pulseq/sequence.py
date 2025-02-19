@@ -2,7 +2,7 @@ import numpy as np
 import os
 import time
 import pypulseq as pp
-from dsv2pulseq.helper import round_up_to_raster, waveform_from_seqblock
+from dsv2pulseq.helper import round_up_to_raster, waveform_from_seqblock, check_lead_time
 
 class Block():
     """
@@ -268,8 +268,6 @@ class Sequence():
                 for event in events:
                     event_del = event.delay - ts_offset
                     if event.type == 'rf':
-                        if event_del < self.rf_lead_time:
-                            raise ValueError(f"RF lead time violation in block with index {block.block_idx}")
                         rf = self.__make_pp_rf(event, event_del, system)
                         pp_events.append(rf)
                         event_check[event.type] = len(pp_events)
@@ -310,6 +308,9 @@ class Sequence():
             pp_events.append(pp.make_delay(delay)) # account for possible delay in last block
         pp_seq.add_block(*pp_events)
 
+        # check lead time
+        check_lead_time(pp_seq, self.rf_lead_time)
+        
         # write sequence
         pp_seq.write(filename)
         end_time = time.time()

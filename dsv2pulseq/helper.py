@@ -32,3 +32,25 @@ def round_up_to_raster(number, decimals=0):
     """
     multiplier = 10 ** decimals
     return np.ceil(number * multiplier) / multiplier
+
+def check_lead_time(seq, lead_time):
+    """Check that the generated sequence does not violate the RF lead time.
+    
+    Args:
+        seq (pp.Sequence): pypulseq sequence.
+        lead_time (float): RF lead time in ms.
+    
+    Raises:
+        ValueError: If the RF lead time is violated.
+    """
+    rf_times = []  # List to store RF event times
+    t = 0  # Time tracker
+    for i in range(len(seq.block_events)):
+        block = seq.get_block(i+1)
+        if block.rf:  # Check if RF event exists
+            rf_times.append(t+block.rf.delay)
+        t += block.block_duration
+    # check that the lead time is not violated
+    min_delta_rf = np.diff(rf_times).min()*1e6  # [us]
+    if min_delta_rf < lead_time:
+        raise ValueError("RF lead time violation: %s < lead time: %s us" % (min_delta_rf, lead_time))
