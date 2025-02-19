@@ -191,7 +191,7 @@ class Sequence():
         # time tracking is always done in [us] (integers), time is only converted to [s], when creating a pulseq event
         event_check = {'rf': 0, 'gx': 0, 'gy': 0, 'gz': 0, 'adc': 0, 'trig': 0}
         pp_events = []
-        ts_offset = 0
+        ts_offset = - self.block_list[0].start_time
         for ix, block in enumerate(self.block_list):
             block_offset = self.block_list[ix-1].block_duration if ix > 0 else 0 # offset time if Pulseq block crosses border of Siemens blocks
             ts_offset -= block_offset # offset time if Siemens block is splitted
