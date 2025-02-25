@@ -27,7 +27,7 @@ if __name__ == "__main__":
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('in_file_prefix', type=str, help="Input dsv file prefix. E.g. 'gre'")
     parser.add_argument('-o', '--out_file', type=str, help='Output Pulseq file.')
-    parser.add_argument('-r', '--ref_volt', help='Reference voltage of simulation [V].')
+    parser.add_argument('-r', '--ref_volt', help='Reference voltage of simulation [V].', type=float)
     parser.add_argument('-b', '--lead_time', help='RF lead time [us] (minimum time between start of event block and beginning of RF).', type=int)
     parser.add_argument('-a', '--hold_time', help='RF hold time [us] (minimum time from end of RF to end of event block).', type=int)
     
