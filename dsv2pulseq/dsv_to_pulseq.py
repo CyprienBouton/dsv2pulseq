@@ -5,7 +5,7 @@ import os
 from dsv2pulseq.read_dsv import read_dsv
 
 defaults = {'out_file': 'external.seq',
-            'ref_volt': 223.529007,
+            'ref_volt': 111,
             'lead_time': 100,
             'hold_time': 30,
             'indep_Tx': False,
@@ -41,5 +41,6 @@ if __name__ == "__main__":
     if args.indep_Tx:
         # 1/sqrt(2) if circular siemens values for RF elliptical Tx
         factor = 0.4684682370808343 if args.elliptical_Tx else 1/(2**0.5)
-        args.ref_volt *= factor
+        args.ref_volt /= factor
+        
     main(args)
